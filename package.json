@@ -1,0 +1,15 @@
+{
+  "name": "neighbourhoodos",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Production-grade Hyperlocal Multi-Vendor Commerce Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo \"We'll configure this later\""
+  },
+  "author": "Vanchha Srivastava",
+  "license": "MIT"
+}
