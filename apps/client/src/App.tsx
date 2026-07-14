@@ -1,6 +1,11 @@
+import Home from "./pages/Home";
+import MainLayout from "./layouts/MainLayout";
+
 function App() {
   return (
-    <h1>NeighbourhoodOS 🚀</h1>
+    <MainLayout>
+      <Home />
+    </MainLayout>
   );
 }
 
