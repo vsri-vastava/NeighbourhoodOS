@@ -1,10 +1,9 @@
 import express from "express";
 
 import {
-  createNeighbourhood,
-  joinNeighbourhood,
-  getMyNeighbourhood,
-} from "../controllers/neighbourhoodController.js";
+  getResidents,
+  getResidentById,
+} from "../controllers/residentController.js";
 
 import {
   authMiddleware,
@@ -17,28 +16,20 @@ const router = express.Router();
 // Protected Routes (Resident)
 // ======================================================
 
-// Create Neighbourhood
-router.post(
-  "/create",
-  authMiddleware,
-  authorizeRoles("resident"),
-  createNeighbourhood
-);
-
-// Join Neighbourhood
-router.post(
-  "/join",
-  authMiddleware,
-  authorizeRoles("resident"),
-  joinNeighbourhood
-);
-
-// Get My Neighbourhood
+// Get All Residents
 router.get(
-  "/me",
+  "/",
   authMiddleware,
   authorizeRoles("resident"),
-  getMyNeighbourhood
+  getResidents
+);
+
+// Get Resident By ID
+router.get(
+  "/:id",
+  authMiddleware,
+  authorizeRoles("resident"),
+  getResidentById
 );
 
 export default router;

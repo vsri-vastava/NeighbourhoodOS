@@ -20,6 +20,16 @@ export const createNeighbourhood = async (req, res) => {
       });
     }
 
+    // Check if user already belongs to a neighbourhood
+    const user = await User.findById(req.user.id);
+
+    if (user.neighbourhoodId) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already part of a neighbourhood.",
+      });
+    }
+
     // Create neighbourhood
     const neighbourhood = await Neighbourhood.create({
       name,
@@ -27,10 +37,9 @@ export const createNeighbourhood = async (req, res) => {
       createdBy: req.user.id,
     });
 
-    // Link creator to the neighbourhood
-    await User.findByIdAndUpdate(req.user.id, {
-      neighbourhoodId: neighbourhood._id,
-    });
+    // Link creator to neighbourhood
+    user.neighbourhoodId = neighbourhood._id;
+    await user.save();
 
     return res.status(201).json({
       success: true,
@@ -75,24 +84,59 @@ export const joinNeighbourhood = async (req, res) => {
       });
     }
 
-   // Join neighbourhood
-user.neighbourhoodId = neighbourhood._id;
-await user.save();
+    // Join neighbourhood
+    user.neighbourhoodId = neighbourhood._id;
+    await user.save();
 
-// Fetch updated user without password
-const updatedUser = await User.findById(user._id).select("-password");
+    // Fetch updated user without password
+    const updatedUser = await User.findById(user._id).select("-password");
 
-return res.status(200).json({
-  success: true,
-  message: "Joined neighbourhood successfully.",
-  data: updatedUser,
-});
+    return res.status(200).json({
+      success: true,
+      message: "Joined neighbourhood successfully.",
+      data: updatedUser,
+    });
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
       message: "Failed to join neighbourhood.",
+    });
+  }
+};
+
+// ======================================================
+// Get My Neighbourhood
+// ======================================================
+export const getMyNeighbourhood = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate("neighbourhoodId");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    if (!user.neighbourhoodId) {
+      return res.status(404).json({
+        success: false,
+        message: "You are not part of any neighbourhood.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user.neighbourhoodId,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch neighbourhood.",
     });
   }
 };
