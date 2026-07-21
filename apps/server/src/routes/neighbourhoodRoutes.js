@@ -1,5 +1,10 @@
 import express from "express";
-import { createNeighbourhood } from "../controllers/neighbourhoodController.js";
+
+import {
+  createNeighbourhood,
+  joinNeighbourhood,
+} from "../controllers/neighbourhoodController.js";
+
 import {
   authMiddleware,
   authorizeRoles,
@@ -7,12 +12,24 @@ import {
 
 const router = express.Router();
 
+// ======================================================
+// Protected Routes (Resident)
+// ======================================================
+
 // Create Neighbourhood
 router.post(
   "/create",
   authMiddleware,
   authorizeRoles("resident"),
   createNeighbourhood
+);
+
+// Join Neighbourhood
+router.post(
+  "/join",
+  authMiddleware,
+  authorizeRoles("resident"),
+  joinNeighbourhood
 );
 
 export default router;
