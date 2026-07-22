@@ -39,10 +39,30 @@ const userSchema = new mongoose.Schema(
     },
 
     isVerified: {
-      type: Boolean,
-      default: false,
-    },
-  },
+  type: Boolean,
+  default: false,
+},
+
+phone: {
+  type: String,
+  trim: true,
+  default: "",
+},
+
+address: {
+  type: String,
+  trim: true,
+  default: "",
+},
+
+bio: {
+  type: String,
+  trim: true,
+  maxlength: 250,
+  default: "",
+},
+
+ },
   {
     timestamps: true,
   }
