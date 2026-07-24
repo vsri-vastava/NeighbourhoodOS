@@ -6,20 +6,43 @@ import User from "../models/User.js";
 // ======================================================
 export const createSellerProfile = async (req, res) => {
   try {
-    let { businessName, businessCategory, description, phone } = req.body;
+    let {
+      businessName,
+      businessCategory,
+      description,
+      phone,
+      businessAddress,
+      deliveryRadius,
+      gstNumber,
+      storeLogo,
+    } = req.body;
 
-    // Trim input values
+    // Trim string inputs
     businessName = businessName?.trim();
     businessCategory = businessCategory?.trim();
     description = description?.trim();
     phone = phone?.trim();
+    businessAddress = businessAddress?.trim();
+    gstNumber = gstNumber?.trim();
+    storeLogo = storeLogo?.trim();
+
+    // Convert deliveryRadius to number
+    deliveryRadius =
+      deliveryRadius !== undefined
+        ? Number(deliveryRadius)
+        : 5;
 
     // Validate required fields
-    if (!businessName || !businessCategory || !phone) {
+    if (
+      !businessName ||
+      !businessCategory ||
+      !phone ||
+      !businessAddress
+    ) {
       return res.status(400).json({
         success: false,
         message:
-          "Business name, business category, and phone are required.",
+          "Business name, business category, phone, and business address are required.",
       });
     }
 
@@ -31,7 +54,20 @@ export const createSellerProfile = async (req, res) => {
       });
     }
 
-    // Find current user
+    // Validate delivery radius
+    if (
+      isNaN(deliveryRadius) ||
+      deliveryRadius < 1 ||
+      deliveryRadius > 50
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Delivery radius must be between 1 and 50 km.",
+      });
+    }
+
+    // Find logged-in user
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -45,7 +81,8 @@ export const createSellerProfile = async (req, res) => {
     if (!user.neighbourhoodId) {
       return res.status(400).json({
         success: false,
-        message: "Join a neighbourhood before becoming a seller.",
+        message:
+          "Join a neighbourhood before becoming a seller.",
       });
     }
 
@@ -55,13 +92,13 @@ export const createSellerProfile = async (req, res) => {
     });
 
     if (existingSeller) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: "Seller profile already exists.",
       });
     }
 
-    // Create seller profile
+    // Create seller
     const seller = await Seller.create({
       userId: req.user.id,
       neighbourhoodId: user.neighbourhoodId,
@@ -69,12 +106,20 @@ export const createSellerProfile = async (req, res) => {
       businessCategory,
       description,
       phone,
+      businessAddress,
+      deliveryRadius,
+      gstNumber,
+      storeLogo,
     });
+
+    const populatedSeller = await Seller.findById(seller._id)
+      .populate("userId", "name email")
+      .populate("neighbourhoodId", "name inviteCode");
 
     return res.status(201).json({
       success: true,
       message: "Seller profile created successfully.",
-      data: seller,
+      data: populatedSeller,
     });
   } catch (error) {
     console.error(error);
@@ -119,23 +164,40 @@ export const getMySellerProfile = async (req, res) => {
     });
   }
 };
+
 // ======================================================
 // Update Seller Profile
 // ======================================================
 export const updateSellerProfile = async (req, res) => {
   try {
-    let { businessName, businessCategory, description, phone } = req.body;
+    console.log("BODY:", req.body);
+    let {
+      businessName,
+      businessCategory,
+      description,
+      phone,
+      businessAddress,
+      deliveryRadius,
+      gstNumber,
+      storeLogo,
+    } = req.body;
 
-    // Trim input values
+    // Trim strings
     businessName = businessName?.trim();
     businessCategory = businessCategory?.trim();
     description = description?.trim();
     phone = phone?.trim();
+    businessAddress = businessAddress?.trim();
+    gstNumber = gstNumber?.trim();
+    storeLogo = storeLogo?.trim();
 
-    // Find seller profile
+    // Find seller
     const seller = await Seller.findOne({
       userId: req.user.id,
     });
+    console.log("========== SELLER BEFORE UPDATE ==========");
+console.log(seller.toObject());
+console.log("Incoming businessAddress:", businessAddress);
 
     if (!seller) {
       return res.status(404).json({
@@ -144,20 +206,58 @@ export const updateSellerProfile = async (req, res) => {
       });
     }
 
-    // Validate phone number if provided
-    if (phone !== undefined && !/^[0-9]{10}$/.test(phone)) {
+    // Validate phone if provided
+    if (
+      phone !== undefined &&
+      !/^[0-9]{10}$/.test(phone)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Phone number must contain exactly 10 digits.",
       });
     }
 
-    // Update only provided fields
-    seller.businessName = businessName ?? seller.businessName;
-    seller.businessCategory =
-      businessCategory ?? seller.businessCategory;
-    seller.description = description ?? seller.description;
-    seller.phone = phone ?? seller.phone;
+    // Validate delivery radius if provided
+    if (deliveryRadius !== undefined) {
+      deliveryRadius = Number(deliveryRadius);
+
+      if (
+        isNaN(deliveryRadius) ||
+        deliveryRadius < 1 ||
+        deliveryRadius > 50
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Delivery radius must be between 1 and 50 km.",
+        });
+      }
+    }
+
+    // Update allowed fields only
+    if (businessName !== undefined)
+      seller.businessName = businessName;
+
+    if (businessCategory !== undefined)
+      seller.businessCategory = businessCategory;
+
+    if (description !== undefined)
+      seller.description = description;
+
+    if (phone !== undefined)
+      seller.phone = phone;
+
+    if (businessAddress !== undefined)
+      seller.businessAddress = businessAddress;
+
+    if (deliveryRadius !== undefined)
+      seller.deliveryRadius = deliveryRadius;
+
+    if (gstNumber !== undefined)
+      seller.gstNumber = gstNumber;
+
+    if (storeLogo !== undefined)
+      seller.storeLogo = storeLogo;
 
     await seller.save();
 

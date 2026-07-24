@@ -159,18 +159,16 @@ const productSchema = new mongoose.Schema(
 // Generate Slug Automatically
 // ==========================
 
-productSchema.pre("save", function (next) {
-  if (!this.isModified("name")) return next();
-
-  this.slug =
-    slugify(this.name, {
-      lower: true,
-      strict: true,
-    }) +
-    "-" +
-    Date.now();
-
-  next();
+productSchema.pre("save", function () {
+  if (this.isModified("name")) {
+    this.slug =
+      slugify(this.name, {
+        lower: true,
+        strict: true,
+      }) +
+      "-" +
+      Date.now();
+  }
 });
 
 // ==========================

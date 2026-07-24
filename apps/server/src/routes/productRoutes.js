@@ -5,6 +5,8 @@ import {
   getMyProducts,
   getProductById,
   updateProduct,
+  deleteProduct,
+  getAllProducts,
 } from "../controllers/productController.js";
 
 import {
@@ -16,22 +18,28 @@ const router = express.Router();
 
 console.log("✅ productRoutes loaded");
 
-// All product routes require authentication
-router.use(authMiddleware);
+// =========================
+// Public Routes
+// =========================
 
-// Only residents (who have seller profiles) can manage products
+// Browse marketplace
+router.get("/", getAllProducts);
+
+// =========================
+// Protected Routes
+// =========================
+
+router.use(authMiddleware);
 router.use(authorizeRoles("resident"));
 
-// Get all products of logged-in seller
+router.post("/", createProduct);
+
 router.get("/my-products", getMyProducts);
 
-// Get single product
 router.get("/:id", getProductById);
 
-// Update product
 router.put("/:id", updateProduct);
 
-// Create product
-router.post("/", createProduct);
+router.delete("/:id", deleteProduct);
 
 export default router;

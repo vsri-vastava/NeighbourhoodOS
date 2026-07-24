@@ -5,6 +5,7 @@ import neighbourhoodRoutes from "./routes/neighbourhoodRoutes.js";
 import residentRoutes from "./routes/residentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 const app = express();
 
 // Middleware
@@ -19,6 +20,7 @@ app.use("/api/neighbourhood", neighbourhoodRoutes);
 app.use("/api/residents", residentRoutes);
 app.use("/api/sellers", sellerRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
 // ======================================================
 // Health Check
 // ======================================================
